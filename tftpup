@@ -1,0 +1,4 @@
+sudo service xinetd restart
+sleep 1
+sudo /etc/init.d/xinetd restart
+echo "server restarted, tftp ok"

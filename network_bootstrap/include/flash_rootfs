@@ -1,0 +1,8 @@
+#get name of image from first argument etc.
+echo "installing UBIFS root from script"
+echo "rootfs script recieved $# parameters"
+for i in `seq 0 $#`
+do
+    echo "$i"
+done
+echo "parameters ok"
