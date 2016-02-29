@@ -1,0 +1,21 @@
+#!/bin/bash
+
+clear
+
+while [[ ! -e /dev/sda1 ]]
+do
+echo "wating for usb flash driver with music, timeout: 4sec" >> /dev/tty1
+sleep 4
+done
+
+if [ -e /dev/sda1 ] 
+then
+mkdir /media/flash
+mount /dev/sda1 /media/flash
+else
+echo "Device not found ! Hazard error!" >>/dev/tty1
+fi
+
+ls /media/flash | grep wav | xargs /home/root/play.slave
+
+echo "playing done" >>/dev/tty1

@@ -15,7 +15,7 @@ BAREBOX_CFG="barebox.config"
 KERNEL_BIN="zImage"
 KERNEL_CFG="zImage.config"
 KERNEL_DTB="zImage-dtf088-52masterimx6k001.dtb"
-ROOT_UBIFS="btl-main-image-phyboard-alcor-imx6-1.ubifs"
+ROOT_UBIFS="btl-main-image-phyflex-imx6-2.ubifs"
 TMPFOLDERNAME="TMP_IMAGES_LINK"
 
 #local pc definitions
@@ -46,11 +46,10 @@ then
         echo "setting dhcp"
         echo "global.dhcp.vendor_id=barebox-\${global.hostname}" >> $UART_PORT
         echo "dhcp" >> $UART_PORT
-        sleep 1
-        echo "eth0.serverip=10.250.30.202" >> $UART_PORT
-        sleep 1
-        echo "ping 10.250.30.202" >> $UART_PORT
-        sleep 1
+        sleep 4
+        echo "eth0.serverip=$SERVER_IP" >> $UART_PORT
+        echo "ifup" >> $UART_PORT
+        echo "ping $SERVER_IP" >> $UART_PORT
 fi
 #---------------------------------------------------------------------------------
 #load bootstrap_script for image rewrite in NAND
@@ -62,6 +61,10 @@ fi
 
 #---------------------------------------------------------------------------------
 #create symbolic links in tftp servers folder to image folders and files
+if [ -e $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME ]
+ then
+        rm $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME
+fi
 ln -s $YOCTO_PATH/$IMAGES_SRC_PATH $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME
 if [ $? -eq 0 ]
  then
@@ -71,6 +74,7 @@ if [ $? -eq 0 ]
         echo "tip: try deleting the temp symbolic folder ( rm -rf $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME )"        
         #exit;
 fi
+
 
 if [[ -e $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME/$BAREBOX_BIN && 
       -e $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME/$BAREBOX_CFG &&
@@ -86,6 +90,22 @@ if [[ -e $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME/$BAREBOX_BIN &&
 
 
         #User input section - only sets variables to decide in upload and install process
+        echo "-- DEVICE TREE FILE --"
+        VERSION=$(readlink $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME/$KERNEL_DTB)   
+                while true; do
+                    echo "upload and rewrite device-tree ? (available ver: $VERSION)"
+                    read -p ": " yn
+                    case $yn in
+                        [Yy]* ) 
+                                DTF_INSTALL=true;
+                                break;;
+                        [Nn]* ) 
+                                DTF_INSTALL=false;
+                                break;;
+                        * ) echo "Error reading selection. Please answer y/n.";;
+                    esac
+                done        
+
         echo "-- BAREBOX --"
         VERSION=$(readlink $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME/$BAREBOX_BIN)   
                 while true; do
@@ -136,6 +156,19 @@ if [[ -e $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME/$BAREBOX_BIN &&
 
         #send all images to device - todo: loading waiting on signal
         echo "#script to run on target device, upload sum" > $TFTP_DLFOLDER_PATH/$DLSCRNAME
+        if [ $DTF_INSTALL == true ]  #work on rhis
+         then
+                echo "devicetree file rw initiated"
+                if [ -e $(pwd)/include/flash_devicetree ]
+                 then              
+                        cp $(pwd)/include/flash_devicetree $TFTP_DLFOLDER_PATH
+                        echo "tftp flash_devicetree" >> $TFTP_DLFOLDER_PATH/$DLSCRNAME
+                        echo "time sh flash_devicetree $TMPFOLDERNAME $KERNEL_DTB" >> $TFTP_DLFOLDER_PATH/$DLSCRNAME
+                 else
+                        echo "error: 'include/flash_devicetree' file not found"
+                fi
+
+        fi 
         if [ $BARE_INSTALL == true ] 
          then
                 echo "barebox rw initiated"
@@ -143,7 +176,7 @@ if [[ -e $TFTP_DLFOLDER_PATH/$TMPFOLDERNAME/$BAREBOX_BIN &&
                  then              
                         cp $(pwd)/include/flash_barebox $TFTP_DLFOLDER_PATH
                         echo "tftp flash_barebox" >> $TFTP_DLFOLDER_PATH/$DLSCRNAME
-                        #echo "time sh flash_barebox $TMPFOLDERNAME $BAREBOX_BIN $BAREBOX_CFG" >> $TFTP_DLFOLDER_PATH/$DLSCRNAME
+                        echo "time sh flash_barebox $TMPFOLDERNAME $BAREBOX_BIN $BAREBOX_CFG" >> $TFTP_DLFOLDER_PATH/$DLSCRNAME
                  else
                         echo "error: 'include/flash_barebox' file not found"
                 fi
@@ -205,4 +238,4 @@ fi
 
 #---------------------------------------------------------------------------------
 #exit process, clean-up for next board
-rm $TFTP_DLFOLDER_PATH/$DLSCRNAME
+
