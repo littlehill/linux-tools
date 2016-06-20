@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "all-run started" >> /dev/tty1
+/home/root/cpu/cpu-config.sh &
+

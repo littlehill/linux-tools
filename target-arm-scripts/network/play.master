@@ -1,18 +1,13 @@
 #!/bin/bash
+
 clear
 
 sleep 2
-
 echo " --- " >> /dev/tty1
 echo "IPconfig data:" >> /dev/tty1
 ifconfig | grep "inet addr:" >> /dev/tty1
 echo " --- " >> /dev/tty1
 
-echo 0 >> /sys/devices/system/cpu/cpu1/online
-echo 0 >> /sys/devices/system/cpu/cpu2/online
-echo 0 >> /sys/devices/system/cpu/cpu3/online
-
-echo "CPU cores 1-3 disabled" >> /dev/tty1
 
 while [[ ! -e /dev/sda1 ]]
 do

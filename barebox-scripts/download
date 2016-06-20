@@ -1,0 +1,14 @@
+echo "# tftp download running.."
+        echo "memory data:"
+        meminfo
+echo "zImage:"
+        time tftp TMP_IMAGES_LINK/zImage
+        tftp TMP_IMAGES_LINK/dtf095-prototype.dtb
+echo "barebox:"
+        tftp TMP_IMAGES_LINK/barebox.bin
+        tftp TMP_IMAGES_LINK/barebox.config
+echo "ubifs: (estimated time:90,000.00-100,000.00 miliseconds)"
+        time tftp TMP_IMAGES_LINK/btl-image-phyflex-imx6-2.ubifs
+echo "current memory info:"
+        meminfo
+echo "# data download finished"

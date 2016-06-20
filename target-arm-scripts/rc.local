@@ -1,0 +1,5 @@
+#!/bin/sh
+
+/home/root/run.all &
+
+exit 0

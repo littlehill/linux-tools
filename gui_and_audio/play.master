@@ -1,0 +1,39 @@
+#!/bin/sh
+clear
+
+sleep 2
+
+echo " --- " >> /dev/tty1
+echo "IPconfig data:" >> /dev/tty1
+ifconfig | grep "inet addr:" >> /dev/tty1
+echo " --- " >> /dev/tty1
+
+#echo 0 >> /sys/devices/system/cpu/cpu1/online
+#echo 0 >> /sys/devices/system/cpu/cpu2/online
+#echo 0 >> /sys/devices/system/cpu/cpu3/online
+#echo "CPU cores 1-3 disabled" >> /dev/tty1
+
+echo "Starting GUI, CORE and audio (cca 10sec)" >> /dev/tty1
+/home/root/CORE &
+sleep 4;
+/home/root/GUI &
+sleep 4;
+
+while [[ ! -e /dev/sda1 ]]
+do
+echo "wating for usb flash driver with music, timeout: 4sec" >> /dev/tty1
+sleep 4
+done
+
+if [ -e /dev/sda1 ] 
+then
+echo "device mass storage found, mounting.." >>/dev/tty1
+mkdir /media/flash
+mount /dev/sda1 /media/flash
+else
+echo "Device not found ! Hazard error!" >>/dev/tty1
+fi
+sleep 2;
+ls /media/flash | grep wav | xargs /home/root/audio/play.slave
+
+echo "playing done" >>/dev/tty1

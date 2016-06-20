@@ -1,0 +1,7 @@
+echo "temperature i2c U14 read:"
+while true
+do
+cat /sys/class/hwmon/hwmon0/temp1_input
+echo "in [miliCelsius]"
+sleep 1
+done

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+while [ "$#" ]
+do
+
+        echo "## playing : $1" >> /dev/tty1
+	aplay "/media/flash/$1"
+
+shift
+done
+
+echo "## play.slave finished" >> /dev/tty1

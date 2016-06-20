@@ -1,0 +1,3 @@
+#!/bin/sh
+/home/root/audio/play.init &
+exit 0
